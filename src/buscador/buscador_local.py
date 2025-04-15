@@ -1,4 +1,5 @@
 from src.buscador.Ibuscador_imagenes import IBuscadorImagenes
+#Ibuscador_imagenes import IBuscadorImagenes
 
 class BuscadorLocal(IBuscadorImagenes):
     """Obtiene imágenes del sistema de archivos local."""
