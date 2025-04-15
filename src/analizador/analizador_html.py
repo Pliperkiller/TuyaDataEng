@@ -38,3 +38,6 @@ if __name__ == "__main__":
     
     print(parser.img_tags)
     print(len(parser.img_tags))
+
+
+    
