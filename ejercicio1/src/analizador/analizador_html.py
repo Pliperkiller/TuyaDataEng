@@ -1,15 +1,11 @@
-from html.parser import HTMLParser
 from src.analizador.Ianalizador import IAnalizador
 #from Ianalizador import IAnalizador
 
-class AnalizadorHTML(IAnalizador,HTMLParser):
+class AnalizadorHTML(IAnalizador):
     """Se encarga de identificar las etiquetas HTML que poseen las fuentes de las imágenes"""
     
     def __init__(self):
         super().__init__()
-        self.img_tags = []
-        self.current_tag = None
-        self.current_attrs = None
     
     def handle_starttag(self, tag, attrs):
         if tag == "img":

@@ -1,17 +1,31 @@
 from src.procesador_imagenes.Iprocesador_imagenes import IProcesadorImagenes
+from src.buscador_imagenes.Ibuscador_imagenes import IBuscadorImagenes
+from src.analizador.Ianalizador import IAnalizador
+from src.buscador_imagenes.buscador_factory import BuscadorFactory 
+from typing import Dict, List, Set, Tuple, Union
+from pathlib import Path
+import urllib.parse
+import re
+import os
 
-class Implementador:
+class Orquestador:
     """
     Clase principal para procesar archivos HTML y convertir sus imágenes a base64.
-    Implementa el patrón de diseño Fachada.
     """
     
-    def __init__(self):
+    def __init__(self, 
+                image_processor: IProcesadorImagenes = None,
+                parser: IAnalizador = None,
+                fetcher_factory: BuscadorFactory = None,
+                 ):
+        self.image_processor = image_processor
+        self.fetcher_factory = fetcher_factory or BuscadorFactory()
+        self.parser = parser
+
         self.results = {
             "success": {},
             "fail": {}
         }
-        self.image_processor = ImageProcessor()
     
     def process_files(self, input_paths: Union[List[str], str]) -> Dict:
         """
@@ -63,28 +77,21 @@ class Implementador:
         return html_files
     
     def _process_html_file(self, html_file_path: str) -> None:
-        """
-        Procesa un archivo HTML específico
-        
-        Args:
-            html_file_path: Ruta al archivo HTML
-        """
         with open(html_file_path, 'r', encoding='utf-8') as file:
             content = file.read()
         
-        # Usar nuestro propio parser HTML en lugar de BeautifulSoup
-        parser = HTMLParser()
+        parser = self.parser
         parser.feed(content)
         
         if not parser.img_tags:
             self.results["success"][html_file_path] = []
             return
         
-        base_url = Path(html_file_path).parent.as_uri() + '/'
+        # Convertir la ruta a absoluta antes de usar as_uri
+        base_url = Path(html_file_path).resolve().parent.as_uri() + '/'
         processed_images = []
         failed_images = []
         
-        # Crear una copia del contenido para modificarlo
         modified_content = content
         
         for _, attrs in parser.img_tags:
@@ -94,31 +101,17 @@ class Implementador:
                 continue
                 
             try:
-                # Convertir la URL relativa a absoluta si es necesario
                 img_url = self._get_absolute_url(src, base_url, html_file_path)
-                
-                # Crear el fetcher adecuado según el tipo de URL
-                fetcher = FetcherFactory.create_fetcher(img_url)
-                
-                # Obtener los datos binarios de la imagen
-                img_data = fetcher.fetch(img_url)
-                
-                # Determinar el tipo MIME
-                mime_type = self.image_processor.get_mime_type(img_url)
-                
-                # Convertir a base64
-                base64_src = self.image_processor.convert_to_base64(img_data, mime_type)
-                
-                # Reemplazar la URL original con la versión base64 en el contenido HTML
-                # Usamos regex para un reemplazo preciso
+                fetcher: IBuscadorImagenes = self.fetcher_factory.crear_buscador(img_url)
+                img_data = fetcher.leer_imagen(img_url)
+                mime_type = self.image_processor.obtener_formato_imagen(img_url)
+                base64_src = self.image_processor.convertir_base64(img_data, mime_type)
                 pattern = re.compile(r'(<img[^>]*src\s*=\s*["\'])' + re.escape(src) + r'(["\'][^>]*>)')
                 modified_content = pattern.sub(r'\1' + base64_src.replace('\\', '\\\\') + r'\2', modified_content)
-                
                 processed_images.append(src)
             except Exception as e:
                 failed_images.append({"src": src, "error": str(e)})
         
-        # Guardar el HTML modificado
         output_path = self._get_output_path(html_file_path)
         with open(output_path, 'w', encoding='utf-8') as file:
             file.write(modified_content)
@@ -170,3 +163,26 @@ class Implementador:
         directory = path_obj.parent
         filename = path_obj.stem + "_base64" + path_obj.suffix
         return str(directory / filename)
+
+if __name__ == "__main__":
+    # Ejemplo de uso
+    from src.procesador_imagenes.procesador_imagenes import ProcesadorImagenes
+    from src.analizador.analizador_html import AnalizadorHTML
+
+    
+    image_processor = ProcesadorImagenes()
+    parser = AnalizadorHTML()
+    
+    # Crear el factory con las implementaciones necesarias
+    buscador_factory = BuscadorFactory()
+    
+    orquestador = Orquestador(
+        image_processor=image_processor,
+        parser=parser,
+        fetcher_factory=buscador_factory
+    )
+    
+    results = orquestador.process_files(["ejemplo.html"])
+    
+    print("Resultados del procesamiento:")
+    print(results)
