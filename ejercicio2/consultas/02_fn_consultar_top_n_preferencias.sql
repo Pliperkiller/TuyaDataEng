@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION sp_top_n_preferencias_consumo(
+CREATE OR REPLACE FUNCTION fn_top_n_preferencias_consumo(
     n INTEGER DEFAULT 2,
     fecha_inicio DATE DEFAULT NULL,
     fecha_fin DATE DEFAULT NULL
