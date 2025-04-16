@@ -1,11 +1,9 @@
 
-# Prueba Técnica - Conversión de Imágenes HTML a Base64
-
-Este proyecto es parte de una prueba técnica que consta de tres ejercicios. El primer ejercicio se encarga de procesar archivos HTML, localizar las imágenes referenciadas en ellos y convertirlas al formato Base64. El resultado es un archivo HTML modificado donde las imágenes se incrustan directamente en el código.
+# Prueba Técnica - Ingeniero de Datos (Conversion de datos)
 
 ---
 
-## Prueba Técnica - Ejercicio 1: Conversión de Imágenes HTML a Base64
+# Prueba Técnica - Ejercicio 1: Conversión de Imágenes HTML a Base64
 
 ### Descripción
 El objetivo de este ejercicio es procesar archivos HTML y convertir las imágenes referenciadas en formato binario (Base64). Esto es útil para incrustar imágenes directamente en el HTML, eliminando la necesidad de referencias externas.
@@ -25,8 +23,8 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente:
 
 1. Clona este repositorio en tu máquina local:
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
-   cd <NOMBRE_DEL_REPOSITORIO>
+   git clone https://github.com/Pliperkiller/TuyaDataEng.git
+   cd TuyaDataEng
    ```
 
 2. Crea un entorno virtual para el proyecto:
@@ -44,53 +42,79 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente:
      source venv/bin/activate
      ```
 
-4. Instala las dependencias necesarias:
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
+
+## **Solución Implementada**
+
+### **1. Estructura del Código**
+El código se organiza en una clase principal llamada `Orquestador`, que coordina todo el proceso. Esta clase utiliza varias dependencias externas para realizar tareas específicas:
+- **`IProcesadorImagenes`**: Interfaz para procesar imágenes (convertirlas a Base64).
+- **`IBuscadorImagenes`**: Interfaz para buscar y leer imágenes desde URLs o rutas locales.
+- **`IAnalizador`**: Interfaz para analizar el contenido HTML y extraer etiquetas `<img>`.
+- **`BuscadorFactory`**: Fábrica para crear instancias de buscadores de imágenes según el tipo de URL.
 
 ---
 
-## Uso
+### **2. Flujo de Trabajo**
 
-### Comando para ejecutar el script
+#### **Paso 1: Procesar Archivos HTML**
+El método `process_files` es el punto de entrada principal. Este método:
+1. Recibe una lista de rutas a archivos o directorios.
+2. Recopila todos los archivos HTML utilizando el método `_collect_html_files`.
+3. Procesa cada archivo HTML individualmente llamando al método `_process_html_file`.
 
-El script principal se encuentra en el archivo 
+#### **Paso 2: Recopilar Archivos HTML**
+El método `_collect_html_files`:
+- Verifica si las rutas proporcionadas son archivos o directorios.
+- Si es un directorio, busca recursivamente todos los archivos con extensiones `.html` o `.htm`.
 
-program.py
+#### **Paso 3: Procesar un Archivo HTML**
+El método `_process_html_file` realiza las siguientes tareas:
+1. **Leer el contenido del archivo HTML**:
+   - Abre el archivo y lee su contenido como texto.
+2. **Analizar el contenido HTML**:
+   - Utiliza un analizador HTML (`parser`) para extraer todas las etiquetas `<img>` y sus atributos.
+3. **Procesar cada imagen**:
+   - Para cada etiqueta `<img>`:
+     - Obtiene el atributo `src` (la URL o ruta de la imagen).
+     - Convierte la URL relativa en una URL absoluta utilizando `_get_absolute_url`.
+     - Descarga la imagen utilizando un buscador (`fetcher`) creado por `BuscadorFactory`.
+     - Convierte la imagen a Base64 utilizando `IProcesadorImagenes`.
+     - Reemplaza la URL original en el HTML con la versión Base64.
+4. **Guardar el archivo HTML modificado**:
+   - Escribe el contenido HTML modificado en un nuevo archivo con el sufijo `_base64`.
 
-. Puedes ejecutarlo con el siguiente comando:
-
-```bash
-python program.py <input> [--output-json <ruta_a_resultados.json>]
-```
-
-#### Argumentos:
-- `<input>`: Ruta al archivo HTML o directorio que contiene los archivos HTML a procesar.
-- `--output-json`: (Opcional) Ruta donde se guardarán los resultados en formato JSON.
-
-#### Ejemplo 1: Procesar un archivo HTML
-```bash
-python program.py ejemplo.html
-```
-
-#### Ejemplo 2: Procesar un directorio completo
-```bash
-python program.py ./html_files/
-```
-
-#### Ejemplo 3: Guardar los resultados en un archivo JSON
-```bash
-python program.py ejemplo.html --output-json resultados.json
-```
+#### **Paso 4: Manejo de Errores**
+- Si ocurre un error al procesar una imagen, se registra en la sección `fail` de los resultados.
+- Si todas las imágenes se procesan correctamente, se registran en la sección `success`.
 
 ---
 
-## Resultados
+### **3. Conversión de Imágenes a Base64**
+La conversión de imágenes a Base64 se realiza en los siguientes pasos:
+1. **Descargar la imagen**:
+   - Se utiliza un buscador (`IBuscadorImagenes`) para leer los datos binarios de la imagen desde una URL o ruta local.
+2. **Determinar el tipo MIME**:
+   - Se utiliza `IProcesadorImagenes` para identificar el formato de la imagen (por ejemplo, `image/jpeg` o `image/png`).
+3. **Codificar en Base64**:
+   - Los datos binarios de la imagen se convierten a una cadena Base64.
+4. **Reemplazar en el HTML**:
+   - La URL original de la imagen se reemplaza con la cadena Base64 en el atributo `src` de la etiqueta `<img>`.
 
-El script genera un archivo HTML modificado con las imágenes convertidas a Base64. Además, si se especifica el argumento `--output-json`, se genera un archivo JSON con el resumen del procesamiento.
+---
 
-### Ejemplo de archivo JSON:
+### **4. Resultados**
+El script genera dos tipos de resultados:
+1. **HTML Modificado**:
+   - Un nuevo archivo HTML con las imágenes incrustadas en formato Base64.
+   - El archivo se guarda en la misma ubicación que el original, con el sufijo `_base64`.
+
+2. **Resumen en JSON** (opcional):
+   - Un archivo JSON que contiene un resumen del procesamiento:
+     - **`success`**: Lista de imágenes procesadas exitosamente.
+     - **`fail`**: Lista de imágenes que no pudieron procesarse, junto con el error correspondiente.
+
+Ejemplo de archivo JSON:
 ```json
 {
   "success": {
@@ -108,6 +132,39 @@ El script genera un archivo HTML modificado con las imágenes convertidas a Base
     ]
   }
 }
+```
+
+---
+
+### **5. Solución a Problemas Comunes**
+- **Error: `relative path can't be expressed as a file URI`**:
+  - Se solucionó utilizando `Path.resolve()` para convertir rutas relativas en absolutas antes de llamar a `Path.as_uri()`.
+
+- **Error: `ModuleNotFoundError: No module named 'src'`**:
+  - Se solucionó asegurando que el script se ejecuta desde la raíz del proyecto y configurando el `PYTHONPATH` correctamente.
+
+---
+
+### **6. Ejecución del Script**
+El script se ejecuta desde la terminal con el siguiente comando:
+
+```bash
+python program.py <input> [--output-json <ruta_a_resultados.json>]
+```
+
+#### Ejemplo 1: Procesar un archivo HTML
+```bash
+python program.py ejemplo.html
+```
+
+#### Ejemplo 2: Procesar un directorio completo
+```bash
+python program.py ./html_files/
+```
+
+#### Ejemplo 3: Guardar los resultados en un archivo JSON
+```bash
+python program.py ejemplo.html --output-json resultados.json
 ```
 
 ---
