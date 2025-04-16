@@ -191,4 +191,8 @@ pyrightconfig.json
 *.jpg
 *.jpeg
 *.gif
-./idea
+/idea
+*.xlsx
+*.xls
+*.pdf
+/.vscode
