@@ -196,3 +196,5 @@ pyrightconfig.json
 *.xls
 *.pdf
 /.vscode
+ejemplo*.html
+resultados.json
