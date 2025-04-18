@@ -172,7 +172,7 @@ python program.py ejemplo.html --output-json resultados.json
 ## Notas
 
 - Asegúrate de que las rutas proporcionadas sean correctas y que los archivos HTML contengan imágenes válidas.
-- Si encuentras el error `ModuleNotFoundError: No module named 'src'`, verifica que estés ejecutando el script desde la raíz del proyecto o configura el `PYTHONPATH` correctamente.
+- Si encuentras el error `ModuleNotFoundError: No module named 'src'`, verifica que estés ejecutando el script desde la raíz del proyecto o configura el `PYTHONPATH` correctamente. En este contexto debes ingresar a la carpeta `ejercicio1` antes de ejecutar el program.py.
 
 ---
 
@@ -299,7 +299,7 @@ Para garantizar que las funciones y consultas funcionen correctamente, sigue est
      ```
 
 3. **Scripts de Consultas**:
-   - Estos scripts contienen las funciones almacenadas necesarias para analizar las rachas de los clientes.
+   - Estos scripts contienen las funciones almacenadas  necesarias para analizar las rachas de los clientes.
    - Se encuentran en la carpeta `consultas`.
    - **Ejemplo**:
      ```sql
@@ -315,6 +315,14 @@ Para garantizar que las funciones y consultas funcionen correctamente, sigue est
 ---
 
 ## Uso de las Funciones
+
+### 0. **Crecion de vista de niveles general**
+   Esta vista produce un listado de los clientes, sus saldos y niveles en cada corte de mes y ademas la fecha de retiro si el cliente se encuentra en la tabla de retiros.
+
+   **Ejemplo de uso**:
+   ```sql
+   SELECT * FROM vw_nivel_cliente;
+   ```
 
 ### 1. **Cálculo de Rachas**
    Esta función calcula las rachas de comportamiento de los clientes, clasificándolas por nivel y duración.
